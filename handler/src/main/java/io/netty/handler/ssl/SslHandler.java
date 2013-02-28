@@ -790,9 +790,9 @@ public class SslHandler
         boolean wrapLater = false;
         int bytesProduced = 0;
         try {
-            boolean underflow = false;
+            boolean terminate = false;
 
-            while (!underflow) {
+            while (!terminate) {
             loop:
             for (;;) {
                 SSLEngineResult result = unwrap(engine, in, out);
@@ -802,9 +802,10 @@ public class SslHandler
                 case CLOSED:
                     // notify about the CLOSED state of the SSLEngine. See #137
                     sslCloseFuture.setClosed();
+                    terminate = true;
                     break;
                 case BUFFER_UNDERFLOW:
-                    underflow = true;
+                    terminate = true;
                     break loop;
                 }
 
