@@ -790,6 +790,9 @@ public class SslHandler
         boolean wrapLater = false;
         int bytesProduced = 0;
         try {
+            boolean underflow = false;
+
+            while (!underflow) {
             loop:
             for (;;) {
                 SSLEngineResult result = unwrap(engine, in, out);
@@ -801,6 +804,7 @@ public class SslHandler
                     sslCloseFuture.setClosed();
                     break;
                 case BUFFER_UNDERFLOW:
+                    underflow = true;
                     break loop;
                 }
 
@@ -831,6 +835,7 @@ public class SslHandler
 
             if (wrapLater) {
                 flush0(ctx, ctx.newPromise(), true);
+            }
             }
         } catch (SSLException e) {
             setHandshakeFailure(e);
