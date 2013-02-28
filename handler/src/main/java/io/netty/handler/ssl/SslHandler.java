@@ -482,6 +482,9 @@ public class SslHandler
                         setHandshakeSuccess();
                         continue;
                     case NOT_HANDSHAKING:
+                        if (ctx.inboundByteBuffer().isReadable()) {
+                            unwrapLater = true;
+                        }
                         break;
                     default:
                         throw new IllegalStateException("Unknown handshake status: " + result.getHandshakeStatus());
@@ -559,6 +562,7 @@ public class SslHandler
         for (;;) {
             ByteBuffer out0 = out.nioBuffer(out.writerIndex(), out.writableBytes());
             SSLEngineResult result = engine.wrap(in0, out0);
+            logger.debug("SSL wrap result: " + result);
             in.skipBytes(result.bytesConsumed());
             out.writerIndex(out.writerIndex() + result.bytesProduced());
             if (result.getStatus() == Status.BUFFER_OVERFLOW) {
@@ -855,6 +859,7 @@ public class SslHandler
         for (;;) {
             ByteBuffer out0 = out.nioBuffer(out.writerIndex(), out.writableBytes());
             SSLEngineResult result = engine.unwrap(in0, out0);
+            logger.debug("SSL unwrap result: " + result);
             in.skipBytes(result.bytesConsumed());
             out.writerIndex(out.writerIndex() + result.bytesProduced());
             switch (result.getStatus()) {
